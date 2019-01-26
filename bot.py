@@ -1,8 +1,22 @@
-import discord, BTEdb, traceback, sys
+import discord, BTEdb, traceback, sys, time, json
 from fuzzywuzzy import fuzz
 sys.path.append(".")
 from gyms import gyms
- 
+
+#server = 415924072640151555 # nrv pkgo
+#server = 498691390683742208 # pixel
+cat = 492754071468638234 # nrv pkgo raids
+cat = 498691390683742209 # pixel text channels
+ignores = [
+      498691390683742210 # pixel general
+    , 538418204398190594 # pixel test2
+    , 520296127476531226 # nrv pkgo raid command guide
+    , 415924408327077888 # nrv pkgo raid report
+    ]
+meowth = 346759953006198784 # hope this is the same
+
+me = 158673755105787904
+
 def distance(s1, s2):
     return 100 - fuzz.token_set_ratio(s1, s2)
 
@@ -21,24 +35,45 @@ db = BTEdb.Database("hhclub-bridge.json")
 if not db.TableExists("master"):
     db.CreateTable("master")
 
-#server = 415924072640151555 # nrv pkgo
-#server = 498691390683742208 # pixel
-cat = 492754071468638234 # nrv pkgo raids
-#cat = 498691390683742209 # pixel text channels
-meowth = 346759953006198784 # hope this is the same
+def parse_time(when):
+    now = time.localtime()
+    now = now.tm_hour * 60 + now.tm_min
+    when = when.split("(")[1].split(")")[0].split(":") # poor man's regular expression
+    when = int(when[0]) * 60 + int(when[1])
+    return when - now
 
-me = 158673755105787904
+def update_server(obj):
+    mode = "Egg Hatch" if obj["state"] in ["egg", "hatched"] else "Raid End"
+    minutes = parse_time(obj["when"])
+    # TODO
+
+def update_db(obj):
+    if obj["state"] == "dead":
+        db.Delete("master", id = obj["id"])
+        return
+    existing = db.Select("master", id = obj["id"])
+    if len(existing) == 0:
+        db.Insert("master", **obj);
+        update_server(obj)
+    else:
+        existing = existing[0]
+        if existing["state"] != obj["state"] or existing["raid"] != obj["raid"]:
+            update_server(obj)
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
 
     async def check_channel(self, channel):
+        if channel.id in ignores: return
         #print(channel.id)
         #print(channel.created_at)
         #async for message in channel.history(around = channel.created_at, reverse = True, limit = 10):
         state = False
+        print("Awaiting pins")
         for message in await channel.pins():
+            print("Got pins")
             if message.author.id != meowth: continue
             #print(message)
             split = message.content.split()
@@ -67,27 +102,27 @@ class MyClient(discord.Client):
                     raid.append(split[i])
                 if inlocation:
                     location.append(split[i])
-            state = "dead" if channel.name.startswith("expired-") else ("egg" if egg else "raid")
+            state = "dead" if channel.name.startswith("expired-") else ("hatched" if channel.name.startswith("hatched-") else ("egg" if egg else "raid"))
             location = " ".join(location)[:-1]
             gym = best_guess(location)
             raid = " ".join(raid)
             fields = {}
             lastfield = False
             for field in message.embeds[0].fields:
-                name = field.name
+                name = field.name.replace("*", "")
+                value = field.value.replace("*", "")
                 if name == "\u200b":
                     name = lastname
                 if name in fields:
-                    fields[name] += " " + field.value
+                    fields[name] += " " + value
                 else:
-                    fields[name] = field.value
+                    fields[name] = value
                 lastname = name
-            print(raid)
-            print(location)
-            print(gym)
-            print(fields)
-            print(state)
-            print()
+            when = fields["Expires:"] if "Expires:" in fields else fields["Hatches:"]
+            #minutes_left = parse_time(unparsed_time) # may be negative # TODO move this line to update_server
+            raidobj = {"raid": raid, "location": location, "gym": gym, "fields": fields, "state": state, "when": when, "id": channel.id}
+            print(json.dumps(raidobj, indent = 4))
+            update_db(raidobj)
             break
 
     async def check(self, channels):
@@ -104,9 +139,20 @@ class MyClient(discord.Client):
         print("Check completed")
 
     async def on_message(self, message):
-        print('Message from {0.author.name} ({0.author.id}) in {0.guild.id}, bot? {0.author.bot}: {0.content}'.format(message))
+        #print('Message from {0.author.name} ({0.author.id}) in {0.guild.id}, bot? {0.author.bot}: {0.content}'.format(message))
         if message.content == "!!!check":
+            print("Checking")
             await self.check(message.guild.channels)
+        if message.content == "!!!force-update":
+            pass # TODO
+        if message.author.id == meowth:
+            print("Caught meowth-sent message in " + message.channel)
+            await self.check_channel(message.channel)
+
+    async def on_message_edit(self, before, after):
+        if before.author.id == meowth:
+            print("Caught meowth-edited message in " + before.channel)
+            await check_channel(before.channel)
 
 client = MyClient()
 client.run('NTM4NDAwOTA2Nzc4MTE2MDk5.DyzRBg.3xSJdAk_oR6g46eUI6j_oO00Q8M')
