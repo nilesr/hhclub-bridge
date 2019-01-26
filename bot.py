@@ -189,5 +189,4 @@ class MyClient(discord.Client):
             await self.check_channel(before.channel)
 
 client = MyClient()
-client.run('NTM4NDAwOTA2Nzc4MTE2MDk5.DyzRBg.3xSJdAk_oR6g46eUI6j_oO00Q8M')
-
+client.run('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')
