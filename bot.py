@@ -147,13 +147,13 @@ class MyClient(discord.Client):
         if message.content == "!!!force-update":
             pass # TODO
         if message.author.id == meowth:
-            print("Caught meowth-sent message in " + message.channel)
+            print("Caught meowth-sent message in #" + message.channel.name)
             await self.check_channel(message.channel)
 
     async def on_message_edit(self, before, after):
         if before.author.id == meowth:
-            print("Caught meowth-edited message in " + before.channel)
-            await check_channel(before.channel)
+            print("Caught meowth-edited message in #" + before.channel.name)
+            await self.check_channel(before.channel)
 
 client = MyClient()
 client.run('NTM4NDAwOTA2Nzc4MTE2MDk5.DyzRBg.3xSJdAk_oR6g46eUI6j_oO00Q8M')
