@@ -1,4 +1,4 @@
-import discord, BTEdb, traceback, sys, time, json
+import discord, BTEdb, traceback, sys, time, json, requests
 from fuzzywuzzy import fuzz
 sys.path.append(".")
 from gyms import gyms
@@ -43,9 +43,27 @@ def parse_time(when):
     return when - now
 
 def update_server(obj):
-    mode = "Egg Hatch" if obj["state"] in ["egg", "hatched"] else "Raid End"
-    minutes = parse_time(obj["when"])
-    # TODO
+    gym_id = gyms[obj["gym"]]
+    timestamp = time.strftime('%Y%m%dT%H%M%S', time.localtime())
+    raid_boss = obj["raid"]
+    timer_minutes = parse_time(obj["when"])
+    timer_type = "Egg Hatch" if obj["state"] in ["egg", "hatched"] else "Raid End"
+    r = requests.post("http://hh-club.com/AddRaid_submit.php", data = {
+          "Gym_ID": gym_id
+        , "Timestamp": timestamp
+        , "RaidBoss": raid_boss
+        , "Timer_minutes": timer_minutes
+        , "TimerType": timer_type
+    })
+    print(r.status_code)
+    if r.status_code not in [200, 300, 301, 302, 303]:
+        raise RuntimeError("Failed to send request: " + r.url)
+
+def update_all():
+    for obj in db.Dump("master"):
+        if parse_time(obj["when"]) < 0 and obj["state"] != "hatched":
+            continue
+        update_server(obj)
 
 def update_db(obj):
     if obj["state"] == "dead":
@@ -58,6 +76,8 @@ def update_db(obj):
     else:
         existing = existing[0]
         if existing["state"] != obj["state"] or existing["raid"] != obj["raid"]:
+            if existing["state"] == "egg" and obj["state"] == "hatched":
+                obj["raid"] = "Hatched " + obj["raid"]
             db.Update("master", [existing], **obj)
             update_server(obj)
 
@@ -65,6 +85,7 @@ def update_db(obj):
 class MyClient(discord.Client):
     async def on_ready(self):
         print('Logged on as {0}!'.format(self.user))
+        #await self.check()
 
     async def check_channel(self, channel):
         if channel.id in ignores: return
@@ -145,7 +166,7 @@ class MyClient(discord.Client):
             print("Checking")
             await self.check(message.guild.channels)
         if message.content == "!!!force-update":
-            pass # TODO
+            update_all();
         if message.author.id == meowth:
             print("Caught meowth-sent message in #" + message.channel.name)
             await self.check_channel(message.channel)
