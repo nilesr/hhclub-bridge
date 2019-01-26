@@ -6,7 +6,7 @@ from gyms import gyms, hardcodes
 #server = 415924072640151555 # nrv pkgo
 #server = 498691390683742208 # pixel
 cat = 492754071468638234 # nrv pkgo raids
-cat = 498691390683742209 # pixel text channels
+#cat = 498691390683742209 # pixel text channels
 ignores = [
       498691390683742210 # pixel general
     , 538418204398190594 # pixel test2
@@ -36,6 +36,7 @@ db = BTEdb.Database("hhclub-bridge.json")
 if not db.TableExists("master"):
     db.CreateTable("master")
 
+# sometimes fails
 def parse_time(when):
     now = time.localtime()
     now = now.tm_hour * 60 + now.tm_min
@@ -56,7 +57,7 @@ def update_server(obj):
         , "Timer_minutes": timer_minutes
         , "TimerType": timer_type
     })
-    print(r.status_code)
+    print("Submitted to server with " + str(r.status_code))
     if r.status_code not in [200, 300, 301, 302, 303]:
         raise RuntimeError("Failed to send request: " + r.url)
 
@@ -81,6 +82,22 @@ def update_db(obj):
                 obj["raid"] = "Hatched " + obj["raid"]
             db.Update("master", [existing], **obj)
             update_server(obj)
+
+def extract_fields(message):
+    if len(message.embeds) == 0: return {}
+    fields = {}
+    lastfield = False
+    for field in message.embeds[0].fields:
+        name = field.name.replace("*", "")
+        value = field.value.replace("*", "")
+        if name == "\u200b":
+            name = lastname
+        if name in fields:
+            fields[name] += " " + value
+        else:
+            fields[name] = value
+        lastname = name
+    return fields
 
 
 class MyClient(discord.Client):
@@ -129,20 +146,8 @@ class MyClient(discord.Client):
             location = " ".join(location)[:-1]
             gym = best_guess(location)
             raid = " ".join(raid)
-            fields = {}
-            lastfield = False
-            for field in message.embeds[0].fields:
-                name = field.name.replace("*", "")
-                value = field.value.replace("*", "")
-                if name == "\u200b":
-                    name = lastname
-                if name in fields:
-                    fields[name] += " " + value
-                else:
-                    fields[name] = value
-                lastname = name
+            fields = extract_fields(message)
             when = fields["Expires:"] if "Expires:" in fields else fields["Hatches:"]
-            #minutes_left = parse_time(unparsed_time) # may be negative # TODO move this line to update_server
             raidobj = {"raid": raid, "location": location, "gym": gym, "fields": fields, "state": state, "when": when, "id": channel.id}
             print(json.dumps(raidobj, indent = 4))
             update_db(raidobj)
@@ -162,18 +167,24 @@ class MyClient(discord.Client):
         print("Check completed")
 
     async def on_message(self, message):
-        #print('Message from {0.author.name} ({0.author.id}) in {0.guild.id}, bot? {0.author.bot}: {0.content}'.format(message))
+        print('Message from {0.author.name} ({0.author.id}) in {0.guild.id}, bot? {0.author.bot}: {0.content}'.format(message))
         if message.content == "!!!check":
             print("Checking")
             await self.check(message.guild.channels)
         if message.content == "!!!force-update":
             update_all();
         if message.author.id == meowth and message.channel.category and message.channel.category.id == cat:
+            if message.content.startswith("This egg will hatch") or message.content.strip() == "":
+                print("discarding new message")
+                return
             print("Caught meowth-sent message in #" + message.channel.name)
             await self.check_channel(message.channel)
 
     async def on_message_edit(self, before, after):
         if before.author.id == meowth and before.channel.category and before.channel.category.id == cat:
+            if before.content == after.content and extract_fields(before) == extract_fields(after):
+                print("discarding edit")
+                return
             print("Caught meowth-edited message in #" + before.channel.name)
             await self.check_channel(before.channel)
 
