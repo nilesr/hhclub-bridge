@@ -65,3 +65,9 @@ gyms = {
 	"Maid in Mud (Hahn Garden)": 16,
 	"Duckpond Gazebo": 5,
 }
+hardcodes = {
+	  "furest": "fuerst"
+	, "fountain": "vt fountian"
+	, "first baptist church of blacksburg": "first baptist"
+	, "first baptist church of bburg": "first baptist"
+}

@@ -1,7 +1,7 @@
 import discord, BTEdb, traceback, sys, time, json, requests
 from fuzzywuzzy import fuzz
 sys.path.append(".")
-from gyms import gyms
+from gyms import gyms, hardcodes
 
 #server = 415924072640151555 # nrv pkgo
 #server = 498691390683742208 # pixel
@@ -21,6 +21,7 @@ def distance(s1, s2):
     return 100 - fuzz.token_set_ratio(s1, s2)
 
 def best_guess(gym):
+    if gym in hardcodes: gym = hardcodes[gym]
     best = False
     best_dist = False
     for key in gyms.keys():
