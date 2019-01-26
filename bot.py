@@ -173,7 +173,7 @@ class MyClient(discord.Client):
             await self.check_channel(message.channel)
 
     async def on_message_edit(self, before, after):
-        if before.author.id == meowth and message.channel.category and message.channel.category.id == cat:
+        if before.author.id == meowth and before.channel.category and before.channel.category.id == cat:
             print("Caught meowth-edited message in #" + before.channel.name)
             await self.check_channel(before.channel)
 
