@@ -21,6 +21,7 @@ def distance(s1, s2):
     return 100 - fuzz.token_set_ratio(s1, s2)
 
 def best_guess(gym):
+    gym = gym.strip().lower().replace("'", "")
     if gym in hardcodes: gym = hardcodes[gym]
     best = False
     best_dist = False

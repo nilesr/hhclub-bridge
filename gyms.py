@@ -70,4 +70,6 @@ hardcodes = {
 	, "fountain": "vt fountian"
 	, "first baptist church of blacksburg": "first baptist"
 	, "first baptist church of bburg": "first baptist"
+	, "buddy russel": "russel fountain"
+	, "blacksburg childrens museum": "childrens museum"
 }
