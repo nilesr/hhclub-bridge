@@ -58,6 +58,7 @@ def update_db(obj):
     else:
         existing = existing[0]
         if existing["state"] != obj["state"] or existing["raid"] != obj["raid"]:
+            db.Update("master", [existing], **obj)
             update_server(obj)
 
 
