@@ -199,6 +199,8 @@ class MyClient(discord.Client):
                 await self.send_to_user(message.author.id, "No data in the database for channel " + str(message.channel.id))
             else:
                 await self.send_to_user(message.author.id, "```json\n" + json.dumps(result[0], indent = 4) + "\n```")
+        if message.content.startswith("!!!location-test "):
+            await self.send_to_user(message.author.id, best_guess(message.content.split()[1:].join(" ")))
         if message.content == "!!!force-update" and message.author.id == me:
             update_all();
         if message.author.id == meowth and message.channel.category and message.channel.category.id == cat:
