@@ -1,4 +1,4 @@
-import discord, BTEdb, traceback, sys, time, json, requests
+import discord, BTEdb, traceback, sys, time, json, requests, asyncio
 from fuzzywuzzy import fuzz
 sys.path.append(".")
 from gyms import gyms, hardcodes
