@@ -138,7 +138,7 @@ class MyClient(discord.Client):
             inraid = False
             inlocation = False
             for i in range(len(split)):
-                if i == 0:
+                if split[i] == "Meowth!":
                     inraid = split[1] != "The"
                     continue # skip Meowth!
                 if split[i] == "raid" or split[i] == "raid!":
