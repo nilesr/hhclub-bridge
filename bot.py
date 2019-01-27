@@ -200,7 +200,7 @@ class MyClient(discord.Client):
             else:
                 await self.send_to_user(message.author.id, "```json\n" + json.dumps(result[0], indent = 4) + "\n```")
         if message.content.startswith("!!!location-test "):
-            await self.send_to_user(message.author.id, best_guess(message.content.split()[1:].join(" ")))
+            await self.send_to_user(message.author.id, best_guess(" ".join(message.content.split()[1:])))
         if message.content == "!!!force-update" and message.author.id == me:
             update_all();
         if message.author.id == meowth and message.channel.category and message.channel.category.id == cat:
