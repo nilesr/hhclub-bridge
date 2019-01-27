@@ -74,4 +74,5 @@ hardcodes = {
 	, "buddy russel": "Russell Fountain (VT Inn)"
 	, "blacksburg childrens museum": "Childrens Museum (S Main)"
 	, "vt fountain": "VT Fountain (Squires)"
+	, "virginia tech fountain": "VT Fountain (Squires)"
 }
