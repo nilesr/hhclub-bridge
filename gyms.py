@@ -67,9 +67,10 @@ gyms = {
 }
 hardcodes = {
 	  "furest": "fuerst"
-	, "fountain": "vt fountian"
+	, "fountain": "VT Fountain (Squires)"
 	, "first baptist church of blacksburg": "first baptist"
 	, "first baptist church of bburg": "first baptist"
 	, "buddy russel": "russel fountain"
 	, "blacksburg childrens museum": "childrens museum"
+	, "vt fountain": "VT Fountain (Squires)"
 }
