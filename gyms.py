@@ -64,6 +64,7 @@ gyms = {
 	"Town Bicentennial": 19,
 	"Maid in Mud (Hahn Garden)": 16,
 	"Duckpond Gazebo": 5,
+	"Westview Cemetary": 69,
 }
 hardcodes = {
 	  "furest": "Jeffrey Fuerst (Cheatham)"
