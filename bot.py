@@ -5,7 +5,10 @@ from gyms import gyms, hardcodes
 
 #server = 415924072640151555 # nrv pkgo
 #server = 498691390683742208 # pixel
-cat = 492754071468638234 # nrv pkgo raids
+cats = [
+      492754071468638234 # nrv pkgo raids
+    , 539177781351809047 # nrv pkgo raids tier5
+    ]
 #cat = 498691390683742209 # pixel text channels
 ignores = [
       498691390683742210 # pixel general
@@ -179,7 +182,7 @@ class MyClient(discord.Client):
 
     async def check(self, channels):
         for channel in channels:
-            if channel.category and channel.category.id == cat:
+            if channel.category and channel.category.id in cats:
                 await self.check_channel(channel)
         print("Check completed")
 
@@ -205,7 +208,7 @@ class MyClient(discord.Client):
             await self.send_to_user(message.author.id, "Location `" + location + "` resolves to gym `" + best_guess(location) + "`")
         if message.content == "!!!force-update" and message.author.id == me:
             update_all();
-        if message.author.id == meowth and message.channel.category and message.channel.category.id == cat:
+        if message.author.id == meowth and message.channel.category and message.channel.category.id in cats:
             if message.content.startswith("This egg will hatch") or message.content.strip() == "":
                 print("discarding new message")
                 return
@@ -213,7 +216,7 @@ class MyClient(discord.Client):
             await self.check_channel(message.channel)
 
     async def on_message_edit(self, before, after):
-        if before.author.id == meowth and before.channel.category and before.channel.category.id == cat:
+        if before.author.id == meowth and before.channel.category and before.channel.category.id in cats:
             if before.content == after.content and extract_fields(before) == extract_fields(after):
                 print("discarding edit")
                 return

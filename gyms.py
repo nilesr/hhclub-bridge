@@ -66,11 +66,12 @@ gyms = {
 	"Duckpond Gazebo": 5,
 }
 hardcodes = {
-	  "furest": "fuerst"
+	  "furest": "Jeffrey Fuerst (Cheatham)"
 	, "fountain": "VT Fountain (Squires)"
-	, "first baptist church of blacksburg": "first baptist"
-	, "first baptist church of bburg": "first baptist"
-	, "buddy russel": "russel fountain"
-	, "blacksburg childrens museum": "childrens museum"
+	, "first baptist church of blacksburg": "First Baptist (Downtown)"
+	, "first baptist church of bburg": "First Baptist (Downtown)"
+	, "first baptist church": "First Baptist (Downtown)"
+	, "buddy russel": "Russell Fountain (VT Inn)"
+	, "blacksburg childrens museum": "Childrens Museum (S Main)"
 	, "vt fountain": "VT Fountain (Squires)"
 }
