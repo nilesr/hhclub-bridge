@@ -213,6 +213,7 @@ class MyClient(discord.Client):
                 print("discarding new message")
                 return
             print("Caught meowth-sent message in #" + message.channel.name)
+            await asyncio.sleep(1)
             await self.check_channel(message.channel)
 
     async def on_message_edit(self, before, after):
@@ -221,6 +222,7 @@ class MyClient(discord.Client):
                 print("discarding edit")
                 return
             print("Caught meowth-edited message in #" + before.channel.name)
+            await asyncio.sleep(1)
             await self.check_channel(before.channel)
 
 client = MyClient()
