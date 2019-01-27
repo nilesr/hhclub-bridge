@@ -190,7 +190,7 @@ class MyClient(discord.Client):
             await self.check_channel(message.channel)
         if message.content == "!!!clean" and message.author.id == me:
             print("Cleaning")
-            clean(message.guild.channels)
+            clean_db(message.guild.channels)
         if message.content == "!!!force-update" and message.author.id == me:
             update_all();
         if message.author.id == meowth and message.channel.category and message.channel.category.id == cat:
