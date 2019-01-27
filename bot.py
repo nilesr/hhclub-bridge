@@ -84,6 +84,16 @@ def update_db(obj):
             db.Update("master", [existing], **obj)
             update_server(obj)
 
+def clean_db(channels):
+    alive = set([channel.id for channel in channels])
+    dead = set()
+    for row in db.Dump("master"):
+        if not row["id"] in alive:
+            dead.add(row["id"])
+    db.Delete("master", lambda r: r["id"] in dead)
+    print("Deleted " + str(len(dead)) + " dead objects from the database")
+
+
 def extract_fields(message):
     if len(message.embeds) == 0: return {}
     fields = {}
@@ -106,7 +116,7 @@ class MyClient(discord.Client):
         print('Logged on as {0}!'.format(self.user))
         #await self.check()
 
-    async def check_channel(self, channel):
+    async def check_channel_real(self, channel):
         if channel.id in ignores: return
         #print(channel.id)
         #print(channel.created_at)
@@ -154,25 +164,34 @@ class MyClient(discord.Client):
             update_db(raidobj)
             break
 
+    async def check_channel(self, channel):
+        try:
+            await self.check_channel_real(channel)
+        except:
+            print("ERROR: " + traceback.format_exc())
+            user = self.get_user(me)
+            if user.dm_channel is None:
+                await user.create_dm()
+            await user.dm_channel.send(content = "ERROR: ```" + traceback.format_exc() + "```")
+
     async def check(self, channels):
         for channel in channels:
             if channel.category and channel.category.id == cat:
-                try:
-                    await self.check_channel(channel)
-                except:
-                    print("ERROR: " + traceback.format_exc())
-                    user = self.get_user(me)
-                    if user.dm_channel is None:
-                        await user.create_dm()
-                    await user.dm_channel.send(content = "ERROR: ```" + traceback.format_exc() + "```")
+                await self.check_channel(channel)
         print("Check completed")
 
     async def on_message(self, message):
         print('Message from {0.author.name} ({0.author.id}) in {0.guild.id}, bot? {0.author.bot}: {0.content}'.format(message))
-        if message.content == "!!!check":
+        if message.content == "!!!check-all"and message.author.id == me:
             print("Checking")
             await self.check(message.guild.channels)
-        if message.content == "!!!force-update":
+        if message.content == "!!!check" and message.author.id == me:
+            print("Checking")
+            await self.check_channel(message.channel)
+        if message.content == "!!!clean" and message.author.id == me:
+            print("Cleaning")
+            clean(message.guild.channels)
+        if message.content == "!!!force-update" and message.author.id == me:
             update_all();
         if message.author.id == meowth and message.channel.category and message.channel.category.id == cat:
             if message.content.startswith("This egg will hatch") or message.content.strip() == "":
