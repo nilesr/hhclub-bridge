@@ -78,7 +78,8 @@ def update_db(obj):
         update_server(obj)
     else:
         existing = existing[0]
-        if existing["state"] != obj["state"] or existing["raid"] != obj["raid"]:
+        # sometimes the initial "when" reads as "Set with !timerset", and so we want to update the database when that data is available
+        if existing["state"] != obj["state"] or existing["raid"] != obj["raid"] or existing["when"] != obj["when"]:
             if existing["state"] == "egg" and obj["state"] == "hatched":
                 obj["raid"] = "Hatched " + obj["raid"]
             db.Update("master", [existing], **obj)
