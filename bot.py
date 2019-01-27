@@ -164,15 +164,17 @@ class MyClient(discord.Client):
             update_db(raidobj)
             break
 
+    async def send_to_user(self, user, text):
+        user = self.get_user(user)
+        if user.dm_channel is None:
+            await user.create_dm()
+        await user.dm_channel.send(content = text)
+    
     async def check_channel(self, channel):
         try:
             await self.check_channel_real(channel)
         except:
-            print("ERROR: " + traceback.format_exc())
-            user = self.get_user(me)
-            if user.dm_channel is None:
-                await user.create_dm()
-            await user.dm_channel.send(content = "ERROR: ```" + traceback.format_exc() + "```")
+            await self.send_to_user(me, "ERROR: ```\n" + traceback.format_exc() + "\n```")
 
     async def check(self, channels):
         for channel in channels:
@@ -191,6 +193,12 @@ class MyClient(discord.Client):
         if message.content == "!!!clean" and message.author.id == me:
             print("Cleaning")
             clean_db(message.guild.channels)
+        if message.content == "!!!dump":
+            result = db.Select("master", id = message.channel.id)
+            if len(result) == 0:
+                await self.send_to_user(message.author.id, "No data in the database for channel " + str(message.channel.id))
+            else:
+                await self.send_to_user(message.author.id, "```json\n" + json.dumps(result[0], indent = 4) + "\n```")
         if message.content == "!!!force-update" and message.author.id == me:
             update_all();
         if message.author.id == meowth and message.channel.category and message.channel.category.id == cat:
