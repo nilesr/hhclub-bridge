@@ -42,6 +42,7 @@ if not db.TableExists("master"):
 
 # sometimes fails
 def parse_time(when):
+    if "!timerset" in when: return False
     now = time.localtime()
     now = now.tm_hour * 60 + now.tm_min
     when = when.split("(")[1].split(")")[0].split(":") # poor man's regular expression
@@ -72,6 +73,8 @@ def update_all():
         update_server(obj)
 
 def update_db(obj):
+    if not parse_time(obj["when"]):
+        return
     if obj["state"] == "dead":
         db.Delete("master", id = obj["id"])
         return
